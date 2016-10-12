@@ -36,7 +36,7 @@
   }
 
   /** @ngInject */
-  function StateController($state, services, ServicesState, $filter, $rootScope, Language, ListView) {
+  function StateController($state, services, ServicesState, $filter, $rootScope, Language, ListView, $templateCache) {
     var vm = this;
 
     vm.services = [];
@@ -44,6 +44,12 @@
     if (angular.isDefined($rootScope.notifications) && $rootScope.notifications.data.length > 0) {
       $rootScope.notifications.data.splice(0, $rootScope.notifications.data.length);
     }
+
+    //Mock data
+    angular.forEach(services.resources, function(item) {
+      var randomBool = Math.random() >= 0.5;
+      item['startService'] = randomBool;
+    });
 
     angular.forEach(services.resources, function(item) {
       if (angular.isUndefined(item.service_id)) {
@@ -167,6 +173,21 @@
       /* Make sure sorting direction is maintained */
       sortChange(ServicesState.getSort().currentField, ServicesState.getSort().isAscending);
     }
+
+    var startButtonInclude = '<span>{{item.startService ? "Start" : "Starting"}}</span>';
+    $templateCache.put('start-button-template', startButtonInclude);
+
+    vm.enableButtonForItemFn = function (action, item) {
+      return item.startService;
+    };
+
+    vm.handleButtonAction = function (action, item) {
+      console.log("handleButtonAction");
+    };
+
+    vm.checkDisabled = function (item) {
+      console.log("checkDisabled");
+    };
 
     function startService(action, item) {
       console.log("startService");
