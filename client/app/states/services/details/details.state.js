@@ -53,7 +53,7 @@
   }
 
   /** @ngInject */
-  function StateController($state, service, CollectionsApi, EditServiceModal, RetireServiceModal, OwnershipServiceModal, EventNotifications, Consoles, Chargeback) {
+  function StateController($state, service, CollectionsApi, EditServiceModal, RetireServiceModal, OwnershipServiceModal, EventNotifications, Consoles, Chargeback, PowerOperations) {
     var vm = this;
     setInitialVars();
 
@@ -105,6 +105,16 @@
       vm.retireServiceLater = retireServiceLater;
       vm.ownershipServiceModal = ownershipServiceModal;
       vm.reconfigureService = reconfigureService;
+      vm.startService = startService;
+      vm.stopService = stopService;
+      vm.suspendService = suspendService;
+
+      vm.service.powerState = angular.isDefined(vm.service.options.power_state) ? vm.service.options.power_state : "";
+      vm.service.powerStatus = angular.isDefined(vm.service.options.power_status) ? vm.service.options.power_status : "";
+
+      vm.enableStartButton = PowerOperations.enableStartButton;
+      vm.disableStopButton = PowerOperations.disableStopButton;
+      vm.powerOperationInProgressState = PowerOperations.powerOperationInProgressState;
     }
 
     function removeService() {
@@ -163,5 +173,36 @@
     function retireServiceLater() {
       RetireServiceModal.showModal(vm.service);
     }
+
+    function startService() {
+      console.log("startService");
+      PowerOperations.startService(vm.service);
+    }
+
+    function stopService(item) {
+      console.log("stopService");
+      PowerOperations.stopService(item);
+    }
+
+    function suspendService(item) {
+      console.log("suspendService");
+      PowerOperations.suspendService(item);
+    }
+
+    vm.checkDisabled = function (action, item) {
+      if (action === 'stop') {
+        return PowerOperations.disableStopButton(item);
+      } else if (action === 'suspend') {
+        return PowerOperations.disableSuspendButton(item);
+      }
+    };
+
+    vm.handlePowerOperation = function (action, item) {
+      if (action === 'stop' && !vm.checkDisabled(action, item)) {
+        stopService(item);
+      } else if (action === 'suspend' && !vm.checkDisabled(action, item)) {
+        suspendService(item);
+      }
+    };
   }
 })();
