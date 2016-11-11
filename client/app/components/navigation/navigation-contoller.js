@@ -141,7 +141,7 @@
     });
     ProductInfo.promise.then( function() {
       vm.about.copyright = ProductInfo.data.copyright;
-      vm.about.supportWebsiteText = ProductInfo.data.supportWebsiteText;
+      vm.about.supportWebsiteText = __(ProductInfo.data.supportWebsiteText);
       vm.about.supportWebsite = ProductInfo.data.supportWebsite;
     });
     vm.openAbout = function() {
