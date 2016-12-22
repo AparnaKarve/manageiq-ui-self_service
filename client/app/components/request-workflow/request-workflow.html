@@ -1,0 +1,43 @@
+<div>
+  <div ng-if="vm.workflow">
+    <h2 translate>Request Workflow Details.</h2>
+      <uib-tabset>
+        <uib-tab ng-repeat="tab in vm.workflow.dialogs.dialog_order" heading="{{vm.workflow.dialogs.dialogs[tab].description}}">
+          <div class="panel panel-default">
+            <div class="panel-heading" ng-if="vm.parsedWorkflow['dialogs'][tab].panelTitle0">
+              <strong>{{vm.parsedWorkflow['dialogs'][tab].panelTitle0}}</strong>
+            </div>
+            <div class="panel-body">
+              <div ng-repeat="field in vm.parsedWorkflow['dialogs'][tab].sortedFieldsForPanel0 | orderBy : 'order'">
+                  <form class="form-horizontal">
+                    <div ng-if="field.display != 'hide'">
+                      <div class="form-group" ng-class1="{ 'has-error' : vm.isCatalogRequired() }">
+                        <label class="control-label col-sm-1">{{ field.description }}</label>
+                        {{ vm.workflow.values[field.label] }}
+                        <!--<div class="col-sm-8">-->
+                          <!--<input class="form-control" disabled value="{{ ::vm.workflow.values[field.label] }}"/>-->
+                        <!--</div>-->
+                      </div>
+                    </div>
+                  </form>
+              </div>
+            </div>
+            <div class="panel-heading" ng-if="vm.parsedWorkflow['dialogs'][tab].panelTitle1">
+              <strong>{{vm.parsedWorkflow['dialogs'][tab].panelTitle1}}</strong>
+            </div>
+            <div class="panel-body">
+              <div ng-repeat="field in vm.parsedWorkflow['dialogs'][tab].sortedFieldsForPanel1 | orderBy : 'order'">
+                <form class="form-horizontal">
+                  <div ng-if="field.display != 'hide'">
+                    <div class="form-group" ng-class1="{ 'has-error' : vm.isCatalogRequired() }">
+                      <label class="control-label col-sm-1">{{ field.description }}</label>
+                      {{ vm.workflow.values[field.label] }}
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+      </uib-tabset>
+  </div>
+</div>
