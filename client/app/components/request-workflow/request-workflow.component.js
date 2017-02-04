@@ -20,7 +20,17 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
   function activate() {
     if (vm.workflow) {
       initCustomizedWorkflow();
-      angular.forEach(vm.customizedWorkflow.dialogOrder, setTabPanelTitleForEnabledDialog);
+
+      var promiseObject = {};
+      nodeTypeTitle('clusters', promiseObject);
+      nodeTypeTitle('hosts', promiseObject);
+
+      $q.all(promiseObject).then(function(data) {
+        vm.clusterTitle = getClusterTitle(data.clusters);
+        vm.hostTitle = getHostTitle(data.hosts);
+
+        angular.forEach(vm.customizedWorkflow.dialogOrder, setTabPanelTitleForEnabledDialog);
+      });
     }
   }
 
@@ -57,17 +67,11 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
 
   function setTabPanelTitle(key) {
     var fields = {};
-    var titlePromiseArray = [];
 
     vm.customizedWorkflow.dialogs[key].panelTitle = [];
+    populateTabs(key);
 
-    nodeTypeTitle('clusters', titlePromiseArray);
-    nodeTypeTitle('hosts', titlePromiseArray);
-    $q.all(titlePromiseArray).then(function(data) {
-      populateTabs(key, getClusterTitle(data[0]), getHostTitle(data[1]));
-    });
-
-    function populateTabs(key, clusterTitle, hostTitle) {
+    function populateTabs(key) {
       var panelFields, panelTitles;
       switch (key) {
         case 'requester':
@@ -125,7 +129,7 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
           if (vm.customizedWorkflow.values.placement_auto === 0
             && !lodash.includes(vm.workflowClass, "CloudManager")) {
             panelTitles.push(__("Datacenter"));
-            panelTitles.push(clusterTitle);
+            panelTitles.push(vm.clusterTitle);
             if (lodash.every(["Vmware", "InfraManager"], function(value, key) {
               return lodash.includes(vm.workflowClass, value);
             })) {
@@ -133,7 +137,7 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
               panelTitles.push(__("Folder"));
             }
 
-            panelTitles.push(hostTitle);
+            panelTitles.push(vm.hostTitle);
 
             if (!lodash.includes(vm.workflowClass, "CloudManager")) {
               panelTitles.push(__("Datastore"));
@@ -235,19 +239,14 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
     });
   }
 
-  function nodeTypeTitle(collection, titlePromiseArray) {
-    titlePromiseArray.push(CollectionsApi.options(collection)
-      .then(successNodeTypeTitle));
-
-    function successNodeTypeTitle(response) {
-      return response.data.node_types;
-    }
+  function nodeTypeTitle(collection, promiseObject) {
+    promiseObject[collection] = CollectionsApi.options(collection);
   }
 
-  function getClusterTitle(nodeType) {
+  function getClusterTitle(response) {
     var title;
 
-    switch (nodeType) {
+    switch (response.data.node_types) {
       case 'non_openstack':
         title = __("Cluster");
         break;
@@ -262,10 +261,10 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
     return title;
   }
 
-  function getHostTitle(nodeType) {
+  function getHostTitle(response) {
     var title;
 
-    switch (nodeType) {
+    switch (response.data.node_types) {
       case 'non_openstack':
         title = __("Host");
         break;
