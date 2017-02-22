@@ -1,10 +1,12 @@
+import templateUrl from './request-workflow.html';
+
 export const RequestWorkflowComponent = {
   bindings: {
     workflow: '=?',
     workflowClass: '=?',
     allowedTags: '=?',
   },
-  templateUrl: 'app/components/request-workflow/request-workflow.html',
+  templateUrl,
   controller: requestWorkflowController,
   controllerAs: 'vm',
 };

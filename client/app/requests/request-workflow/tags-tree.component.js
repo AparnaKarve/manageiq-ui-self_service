@@ -1,9 +1,11 @@
+import templateUrl from './tags-tree.html';
+
 export const TagsTreeComponent = {
   bindings: {
     allowedTags: '=?',
     vmTags: '=?',
   },
-  templateUrl: 'app/components/request-workflow/tags-tree.html',
+  templateUrl,
   controller: tagsTreeController,
   controllerAs: 'vm',
 };
