@@ -184,11 +184,12 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
           fields = getFields(key, panelTitles, panelFields);
           break;
         case 'customize':
-          vm.customizedWorkflow.dialogs[key].panelTitle[0] = (__("Credentials"));
-          vm.customizedWorkflow.dialogs[key].panelTitle[1] = (__("IP Address Information"));
-          vm.customizedWorkflow.dialogs[key].panelTitle[2] = (__("DNS"));
-          vm.customizedWorkflow.dialogs[key].panelTitle[3] = (__("Customize Template"));
-          vm.customizedWorkflow.dialogs[key].panelTitle[4] = (__("Selected Template Contents"));
+          // vm.customizedWorkflow.dialogs[key].panelTitle[0] = (__("Credentials"));
+          // vm.customizedWorkflow.dialogs[key].panelTitle[1] = (__("IP Address Information"));
+          // vm.customizedWorkflow.dialogs[key].panelTitle[2] = (__("DNS"));
+          // vm.customizedWorkflow.dialogs[key].panelTitle[3] = (__("Customize Template"));
+          // vm.customizedWorkflow.dialogs[key].panelTitle[4] = (__("Selected Template Contents"));
+          fields = populateCustomize(key, panelTitles, panelFields);
           break;
         case 'schedule':
           vm.customizedWorkflow.dialogs[key].panelTitle[0] = (__("Schedule Info"));
@@ -196,6 +197,107 @@ function requestWorkflowController(API_BASE, lodash, CollectionsApi, $q) {
           break;
       }
       fieldsLayout(key, fields, vm.customizedWorkflow.dialogs[key].panelTitle.length);
+    }
+  }
+
+  function populateCustomize(key, panelTitles, panelFields) {
+    var fieldsArr = [['sysprep_enabled']];
+
+    if (!allFieldsHidden(key, fieldsArr)) {
+      panelTitles = [__("Basic Options")];
+      panelFields = fieldsArr;
+    }
+
+    if (lodash.includes(vm.workflow.values.sysprep_enabled, 'fields')) {
+      fieldsArr = ['sysprep_custom_spec', 'sysprep_spec_override'];
+
+      if (!allFieldsHidden(key, fieldsArr)) {
+        panelTitles.push(__("Custom Specification"));
+        panelFields.push(fieldsArr);
+      }
+    }
+
+    vm.vmOS = 'linux'; // hardcoded
+
+    if (vm.vmOS === 'windows') {
+      fieldsArr = ['sysprep_timezone',
+        'sysprep_auto_logon',
+        'sysprep_auto_logon_count',
+        'sysprep_password'];
+
+      if (!allFieldsHidden(key, fieldsArr)) {
+        panelTitles.push(__("Unattended GUI"));
+        panelFields.push(fieldsArr);
+      }
+      // }
+
+      fieldsArr = ['sysprep_identification'];
+      if (!allFieldsHidden(key, fieldsArr)) {
+        panelTitles.push(__("Identification"));
+        panelFields.push(fieldsArr);
+      }
+
+      if (lodash.includes(vm.workflow.values.sysprep_identification, 'domain')) {
+        // @ldap_ous_tree ? :ldap_ous : nil, :sysprep_domain_admin // after sysprep_domain_name
+        fieldsArr = ['sysprep_domain_name', 'sysprep_domain_password'];
+
+        if (!allFieldsHidden(key, fieldsArr)) {
+          panelTitles.push(__("Domain Information"));
+          panelFields.push(fieldsArr);
+        }
+      } else {
+        fieldsArr = ['sysprep_workgroup_name'];
+
+        if (!allFieldsHidden(key, fieldsArr)) {
+          panelTitles.push(__("Workgroup Information"));
+          panelFields.push(fieldsArr);
+        }
+
+        fieldsArr = ['sysprep_full_name', 'sysprep_organization', 'sysprep_product_id', 'sysprep_computer_name'];
+
+        if (!allFieldsHidden(key, fieldsArr)) {
+          panelTitles.push(__("User Data"));
+          panelFields.push(fieldsArr);
+        }
+
+        fieldsArr = ['sysprep_change_sid', 'sysprep_delete_accounts'];
+
+        if (!allFieldsHidden(key, fieldsArr)) {
+          panelTitles.push(__("Windows Options"));
+          panelFields.push(fieldsArr);
+        }
+
+        fieldsArr = ['sysprep_server_license_mode', 'sysprep_per_server_max_connections'];
+
+        if (!allFieldsHidden(key, fieldsArr)) {
+          panelTitles.push(__("Server License"));
+          panelFields.push(fieldsArr);
+        }
+      }
+    } else if (vm.vmOS === 'linux') {
+      fieldsArr = ['linux_host_name', 'linux_domain_name'];
+
+      if (!allFieldsHidden(key, fieldsArr)) {
+        panelTitles.push(__("Naming"));
+        panelFields.push(fieldsArr);
+      }
+    }
+
+    // You are here: - elsif (@edit && @edit[:new] && @edit[:new][:sysprep_enabled] && @edit[:new][:sysprep_enabled][0]
+    // == "file") || (@options && @options[:sysprep_enabled] && @options[:sysprep_enabled][0] == "file")
+
+    // next step : DRY up!
+
+    return getFields(key, panelTitles, panelFields);
+  }
+
+  function allFieldsHidden(key, panelFields) {
+    if (lodash.find(panelFields, function(value) {
+      return vm.customizedWorkflow.dialogs[key].fields[value].display !== 'hide';
+    })) {
+      return false;
+    } else {
+      return true;
     }
   }
   
